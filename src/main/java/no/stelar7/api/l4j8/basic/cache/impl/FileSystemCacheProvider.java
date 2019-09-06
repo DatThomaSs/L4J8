@@ -2,18 +2,20 @@ package no.stelar7.api.l4j8.basic.cache.impl;
 
 import no.stelar7.api.l4j8.basic.cache.*;
 import no.stelar7.api.l4j8.basic.calling.DataCall;
-import no.stelar7.api.l4j8.basic.constants.api.*;
+import no.stelar7.api.l4j8.basic.constants.api.URLEndpoint;
 import no.stelar7.api.l4j8.basic.utils.Utils;
+import org.slf4j.*;
 
 import java.io.*;
 import java.nio.file.*;
-import java.nio.file.attribute.*;
+import java.nio.file.attribute.FileTime;
 import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
 
 public class FileSystemCacheProvider implements CacheProvider
 {
+    private static final Logger logger = LoggerFactory.getLogger(FileSystemCacheProvider.class);
     
     private final Path              home;
     private       long              timeToLive;
@@ -71,6 +73,12 @@ public class FileSystemCacheProvider implements CacheProvider
     {
         try
         {
+            // if the object we are trying to store is not valid, dont store it.
+            if (obj[0] == null)
+            {
+                return;
+            }
+            
             // inject api key so cache still works in v4
             List<Object> pathData = new ArrayList<>(Arrays.asList(obj));
             pathData.add(DataCall.getCredentials() == null ? "STATIC_DATA" : DataCall.getCredentials().getBaseAPIKey());
@@ -124,6 +132,12 @@ public class FileSystemCacheProvider implements CacheProvider
     {
         try
         {
+            // if the object we are trying to store is not valid, dont store it.
+            if (obj[0] == null)
+            {
+                return;
+            }
+            
             List<Object> pathData = new ArrayList<>(Arrays.asList(obj));
             pathData.add(DataCall.getCredentials().getBaseAPIKey());
             
@@ -168,7 +182,7 @@ public class FileSystemCacheProvider implements CacheProvider
         
         try (ByteArrayInputStream bis = new ByteArrayInputStream(Files.readAllBytes(filepath)); ObjectInput in = new ObjectInputStream(bis))
         {
-            DataCall.getLogLevel().printIf(LogLevel.INFO, String.format("Loaded data from cache (%s %s %s)", this.getClass().getName(), type, Arrays.toString(data)));
+            logger.info("Loaded data from cache ({} {} {})", this.getClass().getName(), type, Arrays.toString(data));
             Object o = in.readObject();
             return Optional.of(o);
             
@@ -219,7 +233,8 @@ public class FileSystemCacheProvider implements CacheProvider
                     clearPath(p);
                 } catch (IOException e)
                 {
-                    e.printStackTrace();
+                    // silent fail
+                    // e.printStackTrace();
                 }
             });
         } catch (IOException e)
@@ -250,7 +265,7 @@ public class FileSystemCacheProvider implements CacheProvider
                     return;
                 }
                 
-                DataCall.getLogLevel().printIf(LogLevel.INFO, "Data in cache is outdated, deleting then re-fetching");
+                logger.debug("Data in cache is outdated, deleting then re-fetching");
                 Files.deleteIfExists(p);
             }
         } else
@@ -272,7 +287,7 @@ public class FileSystemCacheProvider implements CacheProvider
                     return;
                 }
                 
-                DataCall.getLogLevel().printIf(LogLevel.INFO, "Data in cache is outdated, deleting then re-fetching");
+                logger.debug("Data in cache is outdated, deleting then re-fetching");
                 Files.deleteIfExists(p);
             }
             

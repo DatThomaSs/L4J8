@@ -1,6 +1,6 @@
 package no.stelar7.api.l4j8.tests.match;
 
-import no.stelar7.api.l4j8.basic.cache.impl.FileSystemCacheProvider;
+import no.stelar7.api.l4j8.basic.cache.impl.*;
 import no.stelar7.api.l4j8.basic.calling.DataCall;
 import no.stelar7.api.l4j8.basic.constants.api.*;
 import no.stelar7.api.l4j8.basic.constants.types.*;
@@ -43,12 +43,12 @@ public class MatchListTest
     
     final L4J8 l4j8 = new L4J8(SecretFile.CREDS);
     
+    
     @Test
     @Ignore
     public void testMatchAndMatchList()
     {
         DataCall.setCacheProvider(new FileSystemCacheProvider());
-        DataCall.setLogLevel(LogLevel.INFO);
         
         Set<GameQueueType> queue      = null;//EnumSet.of(GameQueueType.TEAM_BUILDER_RANKED_SOLO);
         Set<SeasonType>    season     = null;//EnumSet.of(SeasonType.SEASON_2018);
@@ -87,14 +87,13 @@ public class MatchListTest
         Summoner             s    = new SummonerBuilder().withPlatform(Platform.EUW1).withName(id).get();
         MatchListBuilder     mlb  = new MatchListBuilder();
         List<MatchReference> list = mlb.withAccountId(s.getAccountId()).withPlatform(s.getPlatform()).get();
-        Assert.assertTrue("api didnt load data?!", !list.isEmpty());
+        Assert.assertFalse("api didnt load data?!", list.isEmpty());
     }
     
     @Test
     public void testMatchlistSummoner() throws InterruptedException
     {
         DataCall.setCacheProvider(new FileSystemCacheProvider());
-        DataCall.setLogLevel(LogLevel.INFO);
         LazyList<MatchReference> list = new SummonerBuilder().withPlatform(Platform.EUN1).withName("coust").get().getGames().getLazy();
         list.loadFully();
         
@@ -111,7 +110,6 @@ public class MatchListTest
     @Test
     public void testNoDuplicates()
     {
-        DataCall.setLogLevel(LogLevel.INFO);
         DataCall.setCacheProvider(new FileSystemCacheProvider());
         LazyList<MatchReference> list = new SummonerBuilder().withPlatform(Platform.EUN1).withName("coust").get().getGames().getLazy();
         Set<MatchReference>      ref  = new HashSet<>();
@@ -138,7 +136,6 @@ public class MatchListTest
         Set<GameQueueType> queueTypes = new HashSet<>();
         queueTypes.add(GameQueueType.TEAM_BUILDER_RANKED_SOLO);
         
-        DataCall.setLogLevel(LogLevel.DEBUG);
         List<MatchReference> refs = l4j8.getMatchAPI().getMatchList(region, accountId, null, null, null, null, queueTypes, null, null);
         System.out.println(refs);
     }
@@ -155,7 +152,7 @@ public class MatchListTest
         List<MatchReference> list = new MatchListBuilder().withAccountId(s.getAccountId()).withPlatform(s.getPlatform()).getLazy();
         Assert.assertTrue("LazyList loaded data?!", list.isEmpty());
         list.get(51);
-        Assert.assertTrue("LazyList didnt load data?!", !list.isEmpty());
+        Assert.assertFalse("LazyList didnt load data?!", list.isEmpty());
     }
     
     @Test
@@ -182,10 +179,8 @@ public class MatchListTest
         Summoner                 s  = new SummonerBuilder().withPlatform(Platform.EUW1).withName(id).get();
         LazyList<MatchReference> m  = s.getGames().getLazy();
         
-        Match detail = new MatchBuilder().withId(m.get(0).getGameId()).withPlatform(m.get(0).getPlatform()).get();
-        System.out.println();
+        Match detail  = new MatchBuilder().withId(m.get(0).getGameId()).withPlatform(m.get(0).getPlatform()).get();
         Match detail2 = new MatchBuilder().withId(m.get(1).getGameId()).withPlatform(m.get(1).getPlatform()).get();
-        System.out.println();
     }
     
     @Test
@@ -206,6 +201,7 @@ public class MatchListTest
         System.out.println(detail.getParticipants().get(0).getSpell2().getApiName());
         System.out.println();
     }
+    
     
     @Test
     public void testMatchTolkiIssue()
@@ -232,7 +228,15 @@ public class MatchListTest
         LazyList<MatchReference> refs = new SummonerBuilder().withPlatform(Platform.EUW1).withName("stelar7").get().getGames().getLazy();
         Assert.assertTrue("LazyList is populated?", refs.isEmpty());
         refs.loadFully();
-        Assert.assertTrue("LazyList is not populated?", !refs.isEmpty());
+        Assert.assertFalse("LazyList is not populated?", refs.isEmpty());
+    }
+    
+    @Test
+    public void testTutorialModules()
+    {
+        DataCall.setCacheProvider(EmptyCacheProvider.INSTANCE);
+        Match m = new MatchBuilder().withId(4002917402L).withPlatform(Platform.EUW1).get();
+        System.out.println();
     }
     
     @Test

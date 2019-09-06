@@ -18,10 +18,9 @@ public final class DataCall
     
     private static APICredentials creds;
     private static CacheProvider  cache          = EmptyCacheProvider.INSTANCE;
-    private static LogLevel       logLevel       = LogLevel.NONE;
-    private static String         logFormat      = "[%-30s - %-13s]: %s%n";
     private static int            callStackSkip  = 5;
     private static int            callStackLimit = 5;
+    private static long           maxSleep       = 10000;
     
     private final Map<String, String> urlParams  = new TreeMap<>();
     private final Map<String, String> urlData    = new TreeMap<>();
@@ -30,6 +29,7 @@ public final class DataCall
     private        Enum        platform;
     private        URLEndpoint endpoint;
     private        boolean     useLimiters      = true;
+    private        long        sleep            = -1;
     private        Platform    defaultPlatform  = Platform.EUW1;
     private        String      urlProxy         = Constants.REQUEST_URL;
     private static Preferences ratelimiterCache = Preferences.userRoot().node("no/stelar7/l4j8");
@@ -98,14 +98,14 @@ public final class DataCall
         this.endpoint = endpoint;
     }
     
-    public static void setLogLevel(LogLevel level)
+    public void setMaxSleep(long sleep)
     {
-        DataCall.logLevel = level;
+        this.sleep = sleep;
     }
     
-    public static LogLevel getLogLevel()
+    public long getMaxSleep()
     {
-        return DataCall.logLevel;
+        return this.sleep != -1 ? this.sleep : DataCall.getDefaultMaxSleep();
     }
     
     public static DataCallBuilder builder()
@@ -191,13 +191,14 @@ public final class DataCall
         return useLimiters;
     }
     
-    public static void setLogFormat(String format)
+    public static void setDefaultMaxSleep(long sleep)
     {
-        DataCall.logFormat = format;
+        DataCall.maxSleep = sleep;
     }
     
-    public static String getLogFormat()
+    public static long getDefaultMaxSleep()
     {
-        return DataCall.logFormat;
+        return DataCall.maxSleep;
     }
+    
 }

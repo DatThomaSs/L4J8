@@ -289,6 +289,10 @@ public enum GameQueueType implements CodedEnum
      * Teamfight Tactics (Normal)
      */
     TEAMFIGHT_TACTICS(new Integer[]{1090}),
+    /**
+     * Teamfight Tactics (Ranked)
+     */
+    TEAMFIGHT_TACTICS_RANKED(new Integer[]{1100}, "RANKED_TFT"),
     ;
     
     private final Integer[] codes;
@@ -318,7 +322,7 @@ public enum GameQueueType implements CodedEnum
     
     public static Optional<GameQueueType> getFromString(final String value)
     {
-        return Stream.of(GameQueueType.values()).filter(t -> t.name().equalsIgnoreCase(value)).findFirst();
+        return Stream.of(GameQueueType.values()).filter(t -> t.name().equalsIgnoreCase(value) || t.apiname.equalsIgnoreCase(value)).findFirst();
     }
     
     public static Optional<GameQueueType> getFromId(final int value)

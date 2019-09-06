@@ -5,12 +5,15 @@ import no.stelar7.api.l4j8.basic.constants.api.*;
 import no.stelar7.api.l4j8.basic.constants.types.GameQueueType;
 import no.stelar7.api.l4j8.basic.utils.Pair;
 import no.stelar7.api.l4j8.pojo.league.*;
+import org.slf4j.*;
 
 import java.util.*;
 
 @SuppressWarnings("unchecked")
 public class LeagueBuilder
 {
+    
+    private static final Logger logger = LoggerFactory.getLogger(LeagueBuilder.class);
     
     private final Platform      platform;
     private final GameQueueType queue;
@@ -53,74 +56,11 @@ public class LeagueBuilder
         return new LeagueBuilder(this.platform, this.queue, this.summonerId, leagueId);
     }
     
-    
-    public LeagueList getMasterLeague()
-    {
-        if (this.platform == Platform.UNKNOWN)
-        {
-            return null;
-        }
-        
-        DataCallBuilder builder = new DataCallBuilder().withURLParameter(Constants.REGION_PLACEHOLDER, this.platform.name())
-                                                       .withURLParameter(Constants.QUEUE_PLACEHOLDER, this.queue.getApiName())
-                                                       .withEndpoint(URLEndpoint.V3_LEAGUE_MASTER)
-                                                       .withPlatform(this.platform);
-        
-        Optional chl = DataCall.getCacheProvider().get(URLEndpoint.V3_LEAGUE_MASTER, this.platform, this.queue);
-        if (chl.isPresent())
-        {
-            return (LeagueList) chl.get();
-        }
-        
-        try
-        {
-            LeagueList list = (LeagueList) builder.build();
-            DataCall.getCacheProvider().store(URLEndpoint.V3_LEAGUE_MASTER, list, this.platform, this.queue);
-            return list;
-        } catch (ClassCastException e)
-        {
-            
-            return null;
-        }
-    }
-    
-    
-    public LeagueList getChallengerLeague()
-    {
-        if (this.platform == Platform.UNKNOWN)
-        {
-            return null;
-        }
-        
-        DataCallBuilder builder = new DataCallBuilder().withURLParameter(Constants.REGION_PLACEHOLDER, this.platform.name())
-                                                       .withURLParameter(Constants.QUEUE_PLACEHOLDER, this.queue.getApiName())
-                                                       .withEndpoint(URLEndpoint.V3_LEAGUE_CHALLENGER)
-                                                       .withPlatform(this.platform);
-        
-        
-        Optional chl = DataCall.getCacheProvider().get(URLEndpoint.V3_LEAGUE_CHALLENGER, this.platform, this.queue);
-        if (chl.isPresent())
-        {
-            return (LeagueList) chl.get();
-        }
-        
-        try
-        {
-            LeagueList list = (LeagueList) builder.build();
-            DataCall.getCacheProvider().store(URLEndpoint.V3_LEAGUE_CHALLENGER, list, this.platform, this.queue);
-            return list;
-        } catch (ClassCastException e)
-        {
-            
-            return null;
-        }
-        
-    }
-    
     public List<LeagueEntry> getLeagueEntries()
     {
         if (this.platform == Platform.UNKNOWN || this.summonerId == null)
         {
+            logger.warn("GET called with invalid platform or summonerId");
             return Collections.emptyList();
         }
         
@@ -157,6 +97,7 @@ public class LeagueBuilder
         
         if (this.platform == Platform.UNKNOWN || this.leagueId == null)
         {
+            logger.warn("GET called with invalid platform or leagueId");
             return null;
         }
         
@@ -178,7 +119,6 @@ public class LeagueBuilder
             return list;
         } catch (ClassCastException e)
         {
-            
             return null;
         }
     }
